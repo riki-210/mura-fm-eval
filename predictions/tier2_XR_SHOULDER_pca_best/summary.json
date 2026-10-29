@@ -1,0 +1,10 @@
+{
+  "region": "XR_SHOULDER",
+  "dropout": 0.8,
+  "l2_reg": 0.0001,
+  "use_pca": true,
+  "val_accuracy": 0.6392592787742615,
+  "test_accuracy": 0.6140888333320618,
+  "test_loss": 1.1060048341751099,
+  "epochs_trained": 8
+}

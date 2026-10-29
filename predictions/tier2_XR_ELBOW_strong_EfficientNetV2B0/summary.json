@@ -1,0 +1,19 @@
+{
+  "region": "XR_ELBOW",
+  "backbone": "EfficientNetV2B0",
+  "domain_weights_path": null,
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 33,
+  "class_weight": {
+    "0": 0.8696649839375861,
+    "1": 1.176288019863439
+  },
+  "phase1_final_val_accuracy": 0.6828963756561279,
+  "val_accuracy": 0.774032473564148,
+  "test_accuracy": 0.7440993785858154,
+  "test_loss": 0.5488918423652649
+}

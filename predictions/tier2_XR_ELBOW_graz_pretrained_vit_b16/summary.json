@@ -1,0 +1,17 @@
+{
+  "region": "XR_ELBOW",
+  "model": "ViT-vit_b16",
+  "domain_weights_path": "~/mediinsight_project/codes/graz_pretrained_vit_b16.weights.h5",
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "class_weight": {
+    "0": 0.8696649839375861,
+    "1": 1.176288019863439
+  },
+  "phase1_final_val_accuracy": 0.7815231084823608,
+  "val_accuracy": 0.8489388227462769,
+  "test_accuracy": 0.8049689531326294,
+  "test_loss": 0.4523191750049591
+}

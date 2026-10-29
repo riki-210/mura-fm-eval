@@ -1,0 +1,22 @@
+#!/bin/bash
+#PBS -N graz_pre_densenet121
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=48:00:00
+#PBS -j oe
+#PBS -o graz_pre_densenet121.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+LIVELOG="graz_pre_densenet121_live.log"
+{
+echo "===== JOB INFO ====="; echo "Job ID: $PBS_JOBID"; echo "Node: $(hostname)"; echo "Start: $(date)"; echo "====================="
+python3 -u pretrain_graz_backbone.py \
+    --index-csv "$HOME/mediinsight_project/data/graz_index.csv" \
+    --output-weights "$HOME/mediinsight_project/codes/graz_pretrained_DenseNet121.weights.h5" \
+    --backbone DenseNet121 --epochs 30
+echo "===== JOB DONE ====="; echo "End: $(date)"
+} > "$LIVELOG" 2>&1

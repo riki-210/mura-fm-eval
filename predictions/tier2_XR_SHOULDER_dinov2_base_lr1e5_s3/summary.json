@@ -1,0 +1,19 @@
+{
+  "region": "XR_SHOULDER",
+  "backbone": "dinov2:dinov2-base",
+  "dropout": 0.3,
+  "lr_head": 0.001,
+  "lr_ft": 1e-05,
+  "img_size": 224,
+  "seed": 3,
+  "finetune_epochs_trained": 18,
+  "limit": 0,
+  "val_accuracy": 0.817037037037037,
+  "test_accuracy": 0.7695252679938744,
+  "test_loss": 0.49148890376091003,
+  "tta": "flip4",
+  "test_accuracy_no_tta": 0.7695252679938744,
+  "test_accuracy_tta": 0.7978560490045942,
+  "val_accuracy_no_tta": 0.817037037037037,
+  "val_accuracy_tta": 0.8177777777777778
+}

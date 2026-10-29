@@ -1,0 +1,48 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_strong_densenet169
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_strong_densenet169.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_strong_densenet169_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# Modern-backbone accuracy push: DenseNet169, ImageNet-pretrained, with
+# autocrop+CLAHE preprocessing and the two-phase fine-tuning recipe (see
+# train_tier2_strong.py). Split into one PBS script per backbone (rather
+# than one script looping all four) so the four backbones can run as four
+# SEPARATE jobs in parallel across different GPUs on the cluster, instead of
+# serially in one job -- submit all four backbone scripts (plus the ViT and
+# hybrid scripts) at once with qsub to use the cluster's GPUs concurrently.
+INDEX_CSV="$HOME/mediinsight_project/data/mura_ehr_index.csv"
+
+for REGION in XR_SHOULDER XR_ELBOW XR_HAND; do
+    echo "===== Region: $REGION | Backbone: DenseNet169 ====="
+    python3 -u train_tier2_strong.py \
+        --index-csv "$INDEX_CSV" \
+        --region "$REGION" \
+        --output-dir "$HOME/mediinsight_project/results/tier2_${REGION}_strong_DenseNet169" \
+        --backbone "DenseNet169" \
+        --dropout 0.5 --l2 1e-4 \
+        --warmup-epochs 5 --finetune-epochs 60 \
+        --save-probs
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

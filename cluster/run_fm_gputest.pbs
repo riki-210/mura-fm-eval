@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N fm_gputest
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=16gb
+#PBS -l walltime=00:10:00
+#PBS -j oe
+#PBS -o fm_gputest.pbsout
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate fm
+{
+nvidia-smi | head -n 4
+python3 -c "
+import torch
+print('cuda available:', torch.cuda.is_available(), '| devices:', torch.cuda.device_count())
+x = torch.randn(4096, 4096, device='cuda'); print('matmul ok, sum =', float((x @ x).sum()))
+from transformers import AutoModel
+m = AutoModel.from_pretrained('$HOME/hf_cache/dinov2-base').cuda().eval()
+import time; t=time.time()
+with torch.no_grad(): o = m(pixel_values=torch.randn(16,3,224,224,device='cuda'))
+print('dinov2 forward ok', tuple(o.last_hidden_state.shape), round(time.time()-t,2), 's')
+"
+} > fm_gputest_live.log 2>&1

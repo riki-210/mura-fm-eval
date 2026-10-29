@@ -1,0 +1,50 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_vit
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_vit.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_vit_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+# One-time setup, if not already installed in the mediinsight env:
+#   pip install vit-keras
+python3 -c "import vit_keras" 2>/dev/null || pip install --user vit-keras
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# Vision Transformer (ViT-B16, ImageNet21k+2012-pretrained) accuracy push --
+# same autocrop+CLAHE preprocessing and two-phase fine-tuning recipe as the
+# CNN backbones, for a fair, directly comparable result. Runs as its own
+# job (not folded into run_tier2_strong_*.pbs) so it can execute in
+# parallel with the CNN backbone jobs on a separate GPU.
+INDEX_CSV="$HOME/mediinsight_project/data/mura_ehr_index.csv"
+
+for REGION in XR_SHOULDER XR_ELBOW XR_HAND; do
+    echo "===== Region: $REGION | ViT-B16 ====="
+    python3 -u train_tier2_vit.py \
+        --index-csv "$INDEX_CSV" \
+        --region "$REGION" \
+        --output-dir "$HOME/mediinsight_project/results/tier2_${REGION}_vit_b16" \
+        --vit-variant vit_b16 \
+        --dropout 0.5 --l2 1e-4 \
+        --warmup-epochs 5 --finetune-epochs 60 \
+        --save-probs
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

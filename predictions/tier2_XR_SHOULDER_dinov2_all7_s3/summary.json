@@ -1,0 +1,16 @@
+{
+  "region": "XR_SHOULDER",
+  "backbone": "dinov2 trained on all MURA body parts",
+  "tag": "all7",
+  "seed": 3,
+  "train_rows": 33951,
+  "finetune_epochs_trained": 17,
+  "limit": 0,
+  "val_accuracy": 0.8014814814814815,
+  "test_accuracy": 0.7672281776416539,
+  "tta": "flip4",
+  "test_accuracy_no_tta": 0.7672281776416539,
+  "test_accuracy_tta": 0.7802450229709035,
+  "val_accuracy_no_tta": 0.8014814814814815,
+  "val_accuracy_tta": 0.8
+}

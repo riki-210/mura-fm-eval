@@ -1,0 +1,32 @@
+#!/bin/bash
+#PBS -N mediinsight_ablation
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_ablation.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_ablation_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# Full 5-config hyperparameter ablation, shoulder region only (matches the paper).
+python3 -u run_ablation_5config.py \
+    --index-csv "$HOME/mediinsight_project/data/mura_ehr_index.csv" \
+    --output-dir "$HOME/mediinsight_project/results/ablation_shoulder"
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

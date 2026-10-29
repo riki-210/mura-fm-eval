@@ -1,0 +1,54 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_graz_pretrained
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_graz_pretrained.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_graz_pretrained_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# Fine-tunes Tier 2 on each MURA region starting from the GRAZPEDWRI-DX-
+# pretrained DenseNet169 backbone (run_graz_pretrain.pbs must have completed
+# first and produced graz_pretrained_DenseNet169.weights.h5 in this directory),
+# instead of starting from plain ImageNet weights -- the direct, apples-to-
+# apples comparison against run_tier2_strong_densenet169.pbs's ImageNet-only
+# DenseNet169 result.
+INDEX_CSV="$HOME/mediinsight_project/data/mura_ehr_index.csv"
+GRAZ_WEIGHTS="$HOME/mediinsight_project/codes/graz_pretrained_DenseNet169.weights.h5"
+
+if [ ! -f "$GRAZ_WEIGHTS" ]; then
+    echo "ERROR: $GRAZ_WEIGHTS not found -- run run_graz_pretrain.pbs first." >&2
+    exit 1
+fi
+
+for REGION in XR_SHOULDER XR_ELBOW XR_HAND; do
+    echo "===== Region: $REGION | DenseNet169 (GRAZPEDWRI-DX-pretrained) ====="
+    python3 -u train_tier2_strong.py \
+        --index-csv "$INDEX_CSV" \
+        --region "$REGION" \
+        --output-dir "$HOME/mediinsight_project/results/tier2_${REGION}_graz_pretrained_densenet169" \
+        --backbone DenseNet169 \
+        --domain-weights "$GRAZ_WEIGHTS" \
+        --dropout 0.5 --l2 1e-4 \
+        --warmup-epochs 5 --finetune-epochs 60 \
+        --save-probs
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

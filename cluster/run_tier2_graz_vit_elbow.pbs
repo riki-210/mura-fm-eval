@@ -1,0 +1,26 @@
+#!/bin/bash
+#PBS -N graz_ft_vit_elbow
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o graz_ft_vit_elbow.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+LIVELOG="graz_ft_vit_elbow_live.log"
+W="$HOME/mediinsight_project/codes/graz_pretrained_vit_b16.weights.h5"
+{
+echo "===== JOB INFO ====="; echo "Job ID: $PBS_JOBID"; echo "Node: $(hostname)"; echo "Start: $(date)"; echo "====================="
+if [ ! -f "$W" ]; then echo "ERROR: $W not found -- GRAZ ViT pretraining must finish first." >&2; exit 1; fi
+python3 -u train_tier2_vit.py \
+    --index-csv "$HOME/mediinsight_project/data/mura_ehr_index.csv" \
+    --region XR_ELBOW \
+    --output-dir "$HOME/mediinsight_project/results/tier2_XR_ELBOW_graz_pretrained_vit_b16" \
+    --domain-weights "$W" \
+    --dropout 0.5 --l2 1e-4 --warmup-epochs 5 --finetune-epochs 60 --save-probs
+echo "===== JOB DONE ====="; echo "End: $(date)"
+} > "$LIVELOG" 2>&1

@@ -1,0 +1,19 @@
+{
+  "region": "XR_ELBOW",
+  "backbone": "DenseNet121",
+  "domain_weights_path": "~/mediinsight_project/codes/graz_pretrained_DenseNet121.weights.h5",
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 30,
+  "class_weight": {
+    "0": 0.8696649839375861,
+    "1": 1.176288019863439
+  },
+  "phase1_final_val_accuracy": 0.7003745436668396,
+  "val_accuracy": 0.8252184987068176,
+  "test_accuracy": 0.7863354086875916,
+  "test_loss": 0.6028921604156494
+}

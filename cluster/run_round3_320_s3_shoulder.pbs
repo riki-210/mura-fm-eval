@@ -1,0 +1,43 @@
+#!/bin/bash
+#PBS -N r3_320_s3_shoulder
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=48:00:00
+#PBS -j oe
+#PBS -o r3_320_s3_shoulder.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+LIVELOG="r3_320_s3_shoulder_live.log"
+W="$HOME/mediinsight_project/codes/graz_pretrained_DenseNet169.weights.h5"
+{
+export TF_FORCE_GPU_ALLOW_GROWTH=true
+sleep $((RANDOM % 90))
+echo "CUDA_VISIBLE_DEVICES(before)=$CUDA_VISIBLE_DEVICES"
+nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv
+if [ -z "$CUDA_VISIBLE_DEVICES" ]; then
+  HN=$(hostname -s); mkdir -p "$HOME/.r3_locks"
+  while true; do
+    for i in $(nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits | sort -t, -k2 -n | cut -d, -f1); do
+      used=$(nvidia-smi -i $i --query-gpu=memory.used --format=csv,noheader,nounits)
+      if [ "$used" -lt 55000 ] && mkdir "$HOME/.r3_locks/${HN}_$i" 2>/dev/null; then export CUDA_VISIBLE_DEVICES=$i; break 2; fi
+    done
+    echo "no GPU with >=27GB free, waiting 60s..."; sleep 60
+  done
+  trap 'rmdir "$HOME/.r3_locks/${HN}_$CUDA_VISIBLE_DEVICES" 2>/dev/null' EXIT
+fi
+echo "Using GPU: $CUDA_VISIBLE_DEVICES"
+echo "===== JOB INFO ====="; echo "Job ID: $PBS_JOBID"; echo "Node: $(hostname)"; echo "Start: $(date)"; echo "====================="
+if [ ! -f "$W" ]; then echo "ERROR: $W not found" >&2; exit 1; fi
+python3 -u train_tier2_strong.py \
+    --index-csv "$HOME/mediinsight_project/data/mura_ehr_index.csv" \
+    --region XR_SHOULDER \
+    --output-dir "$HOME/mediinsight_project/results/tier2_XR_SHOULDER_graz_d169_320_s3" \
+    --backbone DenseNet169 --domain-weights "$W" \
+    --img-size 320 --seed 3 --tta \
+    --dropout 0.5 --l2 1e-4 --warmup-epochs 5 --finetune-epochs 60 --save-probs
+echo "===== JOB DONE ====="; echo "End: $(date)"
+} > "$LIVELOG" 2>&1

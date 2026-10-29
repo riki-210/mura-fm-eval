@@ -1,0 +1,31 @@
+#!/bin/bash
+#PBS -N yolo_smoke
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o yolo_smoke.pbsout
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate fm
+export HF_HUB_OFFLINE=1 YOLO_AUTOINSTALL=False
+LIVELOG="yolo_smoke_live.log"
+{
+sleep $((RANDOM % 90))
+if [ -z "$CUDA_VISIBLE_DEVICES" ]; then
+  HN=$(hostname -s); mkdir -p "$HOME/.r3_locks"
+  while true; do
+    for i in $(nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits | sort -t, -k2 -n | cut -d, -f1); do
+      used=$(nvidia-smi -i $i --query-gpu=memory.used --format=csv,noheader,nounits)
+      if [ "$used" -lt 55000 ] && mkdir "$HOME/.r3_locks/${HN}_$i" 2>/dev/null; then export CUDA_VISIBLE_DEVICES=$i; break 2; fi
+    done
+    echo "no GPU with enough free memory, waiting 60s..."; sleep 60
+  done
+  trap 'rmdir "$HOME/.r3_locks/${HN}_$CUDA_VISIBLE_DEVICES" 2>/dev/null' EXIT
+fi
+echo "Using GPU: $CUDA_VISIBLE_DEVICES"; echo "Start: $(date)"
+python3 -u train_graz_yolo.py --epochs 2 --fraction 0.02 --name smoke
+python3 -u eval_graz_yolo.py --run smoke
+echo "===== JOB DONE ====="; echo "End: $(date)"
+} > "$LIVELOG" 2>&1

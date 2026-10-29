@@ -1,0 +1,19 @@
+{
+  "region": "XR_HAND",
+  "backbone": "ConvNeXtTiny",
+  "domain_weights_path": null,
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 29,
+  "class_weight": {
+    "0": 0.6983416252072968,
+    "1": 1.7604515050167224
+  },
+  "phase1_final_val_accuracy": 0.4304932653903961,
+  "val_accuracy": 0.7892376780509949,
+  "test_accuracy": 0.7588889002799988,
+  "test_loss": 0.5359784960746765
+}

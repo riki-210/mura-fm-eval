@@ -1,0 +1,43 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_best
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_best.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_best_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# Trains the paper's best-reported Tier 2 config (dropout=0.8, L2=1e-4, PCA on)
+# for each of the three regions in turn. Requires the index CSV to already
+# exist (produced by run_tier1.pbs) -- if you want to run this before Tier 1
+# finishes, point --index-csv at a copy built by data_utils.py directly, or
+# just wait for Tier 1's index-build step to complete first.
+INDEX_CSV="$HOME/mediinsight_project/data/mura_ehr_index.csv"
+
+for REGION in XR_SHOULDER XR_ELBOW XR_HAND; do
+    echo "===== Region: $REGION ====="
+    python3 -u train_tier2_alexnet.py \
+        --index-csv "$INDEX_CSV" \
+        --region "$REGION" \
+        --output-dir "$HOME/mediinsight_project/results/tier2_${REGION}_pca_best" \
+        --dropout 0.8 --l2 1e-4 --use-pca
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

@@ -1,0 +1,11 @@
+{
+  "region": "XR_SHOULDER",
+  "dropout": 0.8,
+  "l2_reg": 0.0001,
+  "pretrained": true,
+  "freeze_backbone": false,
+  "val_accuracy": 0.6518518328666687,
+  "test_accuracy": 0.6401225328445435,
+  "test_loss": 0.6290925145149231,
+  "epochs_trained": 19
+}

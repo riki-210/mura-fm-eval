@@ -1,0 +1,26 @@
+{
+  "region": "XR_HAND",
+  "backbone": "DenseNet169",
+  "domain_weights_path": "~/mediinsight_project/codes/graz_pretrained_DenseNet169.weights.h5",
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 22,
+  "class_weight": {
+    "0": 0.6983416252072968,
+    "1": 1.7604515050167224
+  },
+  "phase1_final_val_accuracy": 0.7701793909072876,
+  "val_accuracy": 0.7948430776596069,
+  "test_accuracy": 0.7711111307144165,
+  "test_loss": 0.5394984483718872,
+  "img_size": 224,
+  "seed": 3,
+  "tta": "flip4",
+  "test_accuracy_no_tta": 0.7711111111111111,
+  "test_accuracy_tta": 0.7577777777777778,
+  "val_accuracy_no_tta": 0.7948430493273543,
+  "val_accuracy_tta": 0.7937219730941704
+}

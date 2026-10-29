@@ -1,0 +1,19 @@
+{
+  "region": "XR_ELBOW",
+  "backbone": "DenseNet169",
+  "domain_weights_path": null,
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 14,
+  "class_weight": {
+    "0": 0.8696649839375861,
+    "1": 1.176288019863439
+  },
+  "phase1_final_val_accuracy": 0.7078651785850525,
+  "val_accuracy": 0.7677902579307556,
+  "test_accuracy": 0.7229813933372498,
+  "test_loss": 0.5632285475730896
+}

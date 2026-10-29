@@ -1,0 +1,11 @@
+{
+  "region": "XR_HAND",
+  "dropout": 0.8,
+  "l2_reg": 0.0001,
+  "pretrained": true,
+  "freeze_backbone": false,
+  "val_accuracy": 0.7578475475311279,
+  "test_accuracy": 0.7099999785423279,
+  "test_loss": 0.6050293445587158,
+  "epochs_trained": 6
+}

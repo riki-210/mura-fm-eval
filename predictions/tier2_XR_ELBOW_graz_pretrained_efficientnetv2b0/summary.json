@@ -1,0 +1,19 @@
+{
+  "region": "XR_ELBOW",
+  "backbone": "EfficientNetV2B0",
+  "domain_weights_path": "~/mediinsight_project/codes/graz_pretrained_EfficientNetV2B0.weights.h5",
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 44,
+  "class_weight": {
+    "0": 0.8696649839375861,
+    "1": 1.176288019863439
+  },
+  "phase1_final_val_accuracy": 0.7602996230125427,
+  "val_accuracy": 0.8089887499809265,
+  "test_accuracy": 0.7751553058624268,
+  "test_loss": 0.5169551372528076
+}

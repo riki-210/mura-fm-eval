@@ -1,0 +1,48 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_ensemble
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=16gb
+#PBS -l walltime=01:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_ensemble.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_ensemble_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Start time: $(date)"
+echo "====================="
+
+# Combines every --save-probs-trained model's predictions into one stacked
+# ensemble, per region. EDIT the --model-dir list below once you know which
+# runs actually finished and which performed well -- this example includes
+# one of every kind (strong CNN, ViT, hybrid, GRAZ-pretrained, original
+# pretrained-AlexNet) per region; drop any that failed or underperformed,
+# or add more. Run this ONLY after the corresponding training jobs have
+# completed (it reads their saved val_probs.npy/test_probs.npy).
+RESULTS="$HOME/mediinsight_project/results"
+
+for REGION in XR_SHOULDER XR_ELBOW XR_HAND; do
+    echo "===== Ensembling region: $REGION ====="
+    python3 -u ensemble_stack_tier2.py \
+        --region "$REGION" \
+        --model-dir "${RESULTS}/tier2_${REGION}_strong_DenseNet169" \
+        --model-dir "${RESULTS}/tier2_${REGION}_strong_DenseNet121" \
+        --model-dir "${RESULTS}/tier2_${REGION}_strong_EfficientNetV2B0" \
+        --model-dir "${RESULTS}/tier2_${REGION}_strong_ConvNeXtTiny" \
+        --model-dir "${RESULTS}/tier2_${REGION}_vit_b16" \
+        --model-dir "${RESULTS}/tier2_${REGION}_hybrid_densenet169_vitb16" \
+        --model-dir "${RESULTS}/tier2_${REGION}_graz_pretrained_densenet169" \
+        --output-dir "${RESULTS}/tier2_${REGION}_ensemble"
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

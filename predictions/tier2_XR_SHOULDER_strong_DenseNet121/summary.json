@@ -1,0 +1,19 @@
+{
+  "region": "XR_SHOULDER",
+  "backbone": "DenseNet121",
+  "domain_weights_path": null,
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 26,
+  "class_weight": {
+    "0": 0.989298079949638,
+    "1": 1.0109359922804761
+  },
+  "phase1_final_val_accuracy": 0.6459259390830994,
+  "val_accuracy": 0.7392592430114746,
+  "test_accuracy": 0.741194486618042,
+  "test_loss": 0.5352454781532288
+}

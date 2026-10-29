@@ -1,0 +1,48 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_pretrained
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_pretrained.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_pretrained_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# Diagnostic run: plain-image (non-PCA) AlexNet, but with real ImageNet-
+# pretrained weights instead of from-scratch init, same dropout=0.8/L2=1e-4
+# hyperparameters as the paper's reported best config -- isolates whether
+# pretraining alone closes most of the gap to the paper's claimed 92.71%.
+# Requires alexnet_imagenet_weights.npz to already exist -- see
+# convert_pretrained_alexnet_weights.py's docstring (run that ONCE first,
+# on a node with internet access to download.pytorch.org; it only needs
+# CPU, not GPU, and takes under a minute).
+INDEX_CSV="$HOME/mediinsight_project/data/mura_ehr_index.csv"
+WEIGHTS_NPZ="$HOME/mediinsight_project/codes/alexnet_imagenet_weights.npz"
+
+for REGION in XR_SHOULDER XR_ELBOW XR_HAND; do
+    echo "===== Region: $REGION (pretrained, fine-tuned) ====="
+    python3 -u train_tier2_alexnet_pretrained.py \
+        --index-csv "$INDEX_CSV" \
+        --region "$REGION" \
+        --output-dir "$HOME/mediinsight_project/results/tier2_${REGION}_pretrained" \
+        --pretrained-weights "$WEIGHTS_NPZ" \
+        --dropout 0.8 --l2 1e-4
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

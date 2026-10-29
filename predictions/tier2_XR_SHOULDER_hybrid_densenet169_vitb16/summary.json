@@ -1,0 +1,16 @@
+{
+  "region": "XR_SHOULDER",
+  "model": "HybridFusionNet-DenseNet169+vit_b16",
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "class_weight": {
+    "0": 0.989298079949638,
+    "1": 1.0109359922804761
+  },
+  "phase1_final_val_accuracy": 0.6407407522201538,
+  "val_accuracy": 0.7311111092567444,
+  "test_accuracy": 0.7503828406333923,
+  "test_loss": 0.5541737675666809
+}

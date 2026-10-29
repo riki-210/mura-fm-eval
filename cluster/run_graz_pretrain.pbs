@@ -1,0 +1,56 @@
+#!/bin/bash
+#PBS -N mediinsight_graz_pretrain
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_graz_pretrain.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_graz_pretrain_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# GRAZPEDWRI-DX domain-pretraining (the user's own suggested direction):
+# pretrains a DenseNet169 backbone on GRAZPEDWRI-DX pediatric wrist
+# fracture-vs-no-fracture classification BEFORE Tier 2 fine-tuning on MURA,
+# instead of starting Tier 2 straight from ImageNet weights. See
+# pretrain_graz_backbone.py's docstring for why this is valid transfer
+# learning (not dataset merging) and how to build the required index CSV
+# from GRAZPEDWRI-DX's released YOLO annotations.
+#
+# EDIT THIS PATH: point at your prepared GRAZPEDWRI-DX index CSV
+# (image_path, has_fracture, split columns -- see pretrain_graz_backbone.py).
+GRAZ_INDEX_CSV="$HOME/mediinsight_project/data/graz_index.csv"
+OUTPUT_WEIGHTS_DIR="$HOME/mediinsight_project/codes"
+
+for BACKBONE in DenseNet169; do
+    echo "===== GRAZPEDWRI-DX pretraining | Backbone: $BACKBONE ====="
+    python3 -u pretrain_graz_backbone.py \
+        --index-csv "$GRAZ_INDEX_CSV" \
+        --output-weights "${OUTPUT_WEIGHTS_DIR}/graz_pretrained_${BACKBONE}.h5" \
+        --backbone "$BACKBONE" \
+        --epochs 30
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+echo ""
+echo "Next step: fine-tune each MURA region starting from this backbone, e.g.:"
+echo "  python3 train_tier2_strong.py --index-csv \$HOME/mediinsight_project/data/mura_ehr_index.csv \\"
+echo "    --region XR_SHOULDER --backbone DenseNet169 \\"
+echo "    --domain-weights ${OUTPUT_WEIGHTS_DIR}/graz_pretrained_DenseNet169.h5 \\"
+echo "    --output-dir \$HOME/mediinsight_project/results/tier2_XR_SHOULDER_graz_pretrained_densenet169 \\"
+echo "    --save-probs"
+} > "$LIVELOG" 2>&1

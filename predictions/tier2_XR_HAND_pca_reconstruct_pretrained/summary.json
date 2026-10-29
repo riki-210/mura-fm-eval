@@ -1,0 +1,16 @@
+{
+  "region": "XR_HAND",
+  "dropout": 0.8,
+  "l2_reg": 0.0001,
+  "pca_reconstruction": true,
+  "pretrained": true,
+  "val_accuracy": 0.6692824959754944,
+  "test_accuracy": 0.6322222352027893,
+  "test_loss": 0.6477228999137878,
+  "epochs_trained": 16,
+  "pca_n_components": 512,
+  "class_weight": {
+    "0": 0.6983416252072968,
+    "1": 1.7604515050167224
+  }
+}

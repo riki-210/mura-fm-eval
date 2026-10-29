@@ -1,0 +1,19 @@
+{
+  "region": "XR_HAND",
+  "backbone": "EfficientNetV2B0",
+  "domain_weights_path": null,
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "warmup_epochs": 5,
+  "finetune_epochs_trained": 26,
+  "class_weight": {
+    "0": 0.6983416252072968,
+    "1": 1.7604515050167224
+  },
+  "phase1_final_val_accuracy": 0.7679372429847717,
+  "val_accuracy": 0.7825112342834473,
+  "test_accuracy": 0.7377777695655823,
+  "test_loss": 0.5554905533790588
+}

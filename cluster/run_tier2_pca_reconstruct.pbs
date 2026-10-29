@@ -1,0 +1,50 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_pca_reconstruct
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_pca_reconstruct.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_pca_reconstruct_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# Tests the third PCA interpretation: PCA as image-space denoising/
+# reconstruction (project -> inverse_transform -> resize) feeding the FULL
+# AlexNet (conv stack intact, ~60M params, matching the paper's Table 4),
+# combined with real ImageNet-pretrained weights (since the plain-pretrained
+# diagnostic already showed pretraining alone only buys ~2.6-3.6 points on
+# shoulder/elbow, and a flat 0 on hand -- likely a majority-class collapse,
+# worth checking training_log.csv for that region separately).
+# Requires alexnet_imagenet_weights.npz to already exist in this folder
+# (produced in the previous round by convert_pretrained_alexnet_weights.py --
+# no need to regenerate it).
+INDEX_CSV="$HOME/mediinsight_project/data/mura_ehr_index.csv"
+WEIGHTS_NPZ="$HOME/mediinsight_project/codes/alexnet_imagenet_weights.npz"
+
+for REGION in XR_SHOULDER XR_ELBOW XR_HAND; do
+    echo "===== Region: $REGION (PCA-reconstruct, pretrained backbone) ====="
+    python3 -u train_tier2_alexnet_pca_reconstruct.py \
+        --index-csv "$INDEX_CSV" \
+        --region "$REGION" \
+        --output-dir "$HOME/mediinsight_project/results/tier2_${REGION}_pca_reconstruct_pretrained" \
+        --pretrained-weights "$WEIGHTS_NPZ" \
+        --dropout 0.8 --l2 1e-4
+done
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

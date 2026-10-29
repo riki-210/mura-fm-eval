@@ -1,0 +1,45 @@
+#!/bin/bash
+#PBS -N mediinsight_tier2_hybrid_hand
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+#PBS -o mediinsight_tier2_hybrid_hand.pbsout
+
+set -e
+cd "$PBS_O_WORKDIR" 2>/dev/null || cd ~/mediinsight_project/codes
+
+LIVELOG="mediinsight_tier2_hybrid_hand_live.log"
+
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate mediinsight
+
+python3 -c "import vit_keras" 2>/dev/null || pip install --user vit-keras
+
+{
+echo "===== JOB INFO ====="
+echo "Job ID: $PBS_JOBID"
+echo "Running on node: $(hostname)"
+echo "Start time: $(date)"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+echo "====================="
+
+# HybridFusionNet (DenseNet169+ViT-B16), single region (XR_HAND) per job --
+# split out of the original all-3-regions-in-one-job run_tier2_hybrid.pbs
+# after that job hit the 24h walltime limit partway through XR_ELBOW's
+# Phase 2 epoch 2. Each region now gets its own full 24h budget and can run
+# in parallel with the others.
+INDEX_CSV="$HOME/mediinsight_project/data/mura_ehr_index.csv"
+
+python3 -u train_tier2_hybrid.py \
+    --index-csv "$INDEX_CSV" \
+    --region "XR_HAND" \
+    --output-dir "$HOME/mediinsight_project/results/tier2_XR_HAND_hybrid_densenet169_vitb16" \
+    --cnn-backbone DenseNet169 --vit-variant vit_b16 \
+    --dropout 0.5 --l2 1e-4 \
+    --warmup-epochs 5 --finetune-epochs 60 \
+    --save-probs
+
+echo "===== JOB DONE ====="
+echo "End time: $(date)"
+} > "$LIVELOG" 2>&1

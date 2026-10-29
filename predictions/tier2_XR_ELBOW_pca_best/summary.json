@@ -1,0 +1,10 @@
+{
+  "region": "XR_ELBOW",
+  "dropout": 0.8,
+  "l2_reg": 0.0001,
+  "use_pca": true,
+  "val_accuracy": 0.6666666865348816,
+  "test_accuracy": 0.6086956262588501,
+  "test_loss": 1.101514458656311,
+  "epochs_trained": 13
+}

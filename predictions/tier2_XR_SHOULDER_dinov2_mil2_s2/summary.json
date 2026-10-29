@@ -1,0 +1,20 @@
+{
+  "region": "XR_SHOULDER",
+  "backbone": "dinov2-mil:dinov2-base",
+  "level": "study (accuracy fields are per study)",
+  "dropout": 0.3,
+  "lr_ft": 1e-05,
+  "img_size": 224,
+  "seed": 2,
+  "max_views": 5,
+  "view_drop": 0.15,
+  "finetune_epochs_trained": 9,
+  "limit": 0,
+  "val_accuracy": 0.8348214285714286,
+  "test_accuracy": 0.797752808988764,
+  "tta": "flip4",
+  "test_accuracy_no_tta": 0.797752808988764,
+  "test_accuracy_tta": 0.8089887640449438,
+  "val_accuracy_no_tta": 0.8348214285714286,
+  "val_accuracy_tta": 0.8303571428571429
+}

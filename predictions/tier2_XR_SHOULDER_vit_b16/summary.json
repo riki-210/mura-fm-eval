@@ -1,0 +1,16 @@
+{
+  "region": "XR_SHOULDER",
+  "model": "ViT-vit_b16",
+  "dropout": 0.5,
+  "l2_reg": 0.0001,
+  "use_autocrop": true,
+  "use_clahe": true,
+  "class_weight": {
+    "0": 0.989298079949638,
+    "1": 1.0109359922804761
+  },
+  "phase1_final_val_accuracy": 0.6770370602607727,
+  "val_accuracy": 0.7148148417472839,
+  "test_accuracy": 0.7457886934280396,
+  "test_loss": 0.5653799176216125
+}

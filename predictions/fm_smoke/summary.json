@@ -1,0 +1,19 @@
+{
+  "region": "XR_ELBOW",
+  "backbone": "dinov2:dinov2-base",
+  "dropout": 0.3,
+  "lr_head": 0.001,
+  "lr_ft": 2e-05,
+  "img_size": 224,
+  "seed": 1,
+  "finetune_epochs_trained": 2,
+  "limit": 128,
+  "val_accuracy": 0.6640625,
+  "test_accuracy": 0.65625,
+  "test_loss": 0.6270604133605957,
+  "tta": "flip4",
+  "test_accuracy_no_tta": 0.65625,
+  "test_accuracy_tta": 0.7109375,
+  "val_accuracy_no_tta": 0.6640625,
+  "val_accuracy_tta": 0.6875
+}
