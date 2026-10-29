@@ -1,5 +1,7 @@
 # mura-fm-eval
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23761625.svg)](https://doi.org/10.5281/zenodo.23761625)
+
 Code, partitions and per-run predictions for:
 
 > Sarkar, A. and Soni, D. *Foundation-encoder transfer, study-level learning and label noise in abnormality
@@ -50,4 +52,4 @@ relative to the dataset folder.
 
 ## Citation and licence
 
-Code: MIT licence (see `LICENSE`). Please cite the paper; a Zenodo DOI will be added on release.
+Code: MIT licence (see `LICENSE`). Please cite the paper; archived on Zenodo: https://doi.org/10.5281/zenodo.23761625 .
